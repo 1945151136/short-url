@@ -1,14 +1,33 @@
 # 短链接服务平台（URL Shortener）
 
-> 一个生产可用思路设计的高性能短链接服务：基于 **Django + MySQL + Redis + Nginx + Docker**，实现短码生成、HTTP 302 重定向、热点缓存、接口限流、PV/UV 数据统计与开放 API，并配套可视化管理看板。
+> 一个以「生产可用」为目标设计的高性能短链接服务：基于 **Django + MySQL + Redis + Nginx + Docker** 技术栈，实现短码生成、HTTP 302 重定向、热点缓存、接口限流、PV/UV 数据统计与开放 API，并配套可视化管理看板。
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
-![Django](https://img.shields.io/badge/Django-5.x-green)
+![Python](https://img.shields.io/badge/Python-3.12-blue)
+![Django](https://img.shields.io/badge/Django-5.1-green)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-orange)
 ![Redis](https://img.shields.io/badge/Redis-7-red)
 ![Nginx](https://img.shields.io/badge/Nginx-1.27-success)
 ![Docker](https://img.shields.io/badge/Docker--Compose-ready-2496ED)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
+
+---
+
+## 📑 目录
+
+- [✨ 功能特性](#功能特性)
+- [🖼 界面预览](#界面预览)
+- [🏗 技术栈](#技术栈)
+- [📐 系统架构](#系统架构)
+- [💡 技术亮点与设计思考](#技术亮点与设计思考)
+- [📁 项目结构](#项目结构)
+- [🗄 数据库设计](#数据库设计)
+- [🚀 快速开始](#快速开始)
+- [📖 API 文档](#api-文档)
+- [🧪 测试](#测试)
+- [🔧 配置项](#配置项)
+- [🛣 可继续演进的方向](#可继续演进的方向)
+- [⚠️ 说明](#说明)
+- [📄 License](#license)
 
 ---
 
@@ -58,7 +77,7 @@
 
 | 层次 | 选型 |
 | --- | --- |
-| Web 框架 | Python 3.12、Django 5.x（MTV、ORM、Auth、Admin） |
+| Web 框架 | Python 3.12、Django 5.1（MTV、ORM、Auth、Admin） |
 | 数据库 | MySQL 8.0（PyMySQL 驱动，utf8mb4） |
 | 缓存 / 统计 | Redis 7（django-redis、String 计数、HyperLogLog） |
 | 反向代理 | Nginx 1.27（反代 gunicorn、托管静态资源） |
@@ -153,7 +172,7 @@ short-url/
 │   ├── migrations/
 │   └── services/             # 业务逻辑分层（瘦视图，胖服务）
 │       ├── base62.py            # Base62 发号（洗牌字母表 + 偏移）
-│       ├── short_url_service.py# 短链创建 / 更新 / 删除（事务）
+│       ├── short_url_service.py # 短链创建 / 更新 / 删除（事务）
 │       ├── cache_service.py     # 热点缓存 / 空值缓存 / 主动失效
 │       ├── rate_limit.py        # Redis 固定窗口限流
 │       ├── url_validator.py     # URL 规范化 + SSRF 防护
@@ -335,10 +354,12 @@ python scripts/http_e2e.py
 | `DJANGO_SECRET_KEY` | 内置开发值 | 生产务必替换为随机长字符串 |
 | `DJANGO_DEBUG` | `True` | 生产置 `False` |
 | `DJANGO_ALLOWED_HOSTS` | `*` | 允许的域名，逗号分隔 |
+| `CSRF_TRUSTED_ORIGINS` | localhost:8000/8088/8090 | CSRF 可信来源（反代 / 自定义域名时按实际地址配置） |
 | `DB_ENGINE` | 空（SQLite） | 设为 `mysql` 启用 MySQL |
 | `DB_HOST/PORT/NAME/USER/PASSWORD` | — | MySQL 连接信息 |
 | `REDIS_URL` | 空（LocMem） | 如 `redis://cache:6379/0` |
 | `SITE_BASE_URL` | `http://localhost:8000` | 拼接短链用的对外地址 |
+| `SHORT_CODE_MIN_LENGTH` | `6` | 系统短码最小位数（发号偏移 62^(N-1)） |
 | `ALLOW_ANONYMOUS_CREATE` | `True` | 是否允许匿名创建 |
 | `RATE_LIMIT_WINDOW / RATE_LIMIT_MAX` | `60 / 30` | 限流窗口（秒）与上限 |
 | `HTTP_PORT` | `8088` | 仅 Docker Compose，宿主机映射端口 |
@@ -363,4 +384,3 @@ python scripts/http_e2e.py
 ## 📄 License
 
 [MIT](LICENSE)
-
