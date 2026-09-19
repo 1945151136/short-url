@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block title %}短链接服务平台 · 一键缩短链接{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <h1>把长链接，<span class="grad">一键变短</span></h1>
+  <p>高性能短链接服务 · Base62 发号 · Redis 缓存加速 · 访问数据统计分析</p>
+</section>
+
+<div class="card" style="max-width:760px;margin:0 auto 24px;">
+  <div class="card-title">创建短链接</div>
+
+  {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+
+  <form method="post" action="{% url 'index' %}">
+    {% csrf_token %}
+    <div class="form-group">
+      <label>{{ form.original_url.label }}</label>
+      {{ form.original_url }}
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>{{ form.alias.label }}</label>
+        {{ form.alias }}
+      </div>
+      <div class="form-group">
+        <label>{{ form.expires_at.label }}</label>
+        {{ form.expires_at }}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>{{ form.remarks.label }}</label>
+      {{ form.remarks }}
+    </div>
+
+    <button class="btn btn-primary btn-block" type="submit">⚡ 立即生成短链接</button>
+    {% if not user.is_authenticated %}
+      <p class="helptext" style="text-align:center;margin-top:10px">
+        当前为免登录演示模式，<a href="{% url 'register' %}">注册 / 登录</a> 后可在看板中管理短链并查看统计
+      </p>
+    {% endif %}
+  </form>
+
+  {% if result %}
+    <div class="result-box">
+      <div class="result-label">✅ 生成成功，复制下方链接即可使用</div>
+      <div class="short-link-row">
+        <div class="short-link" id="shortLink">{{ result.short_url }}</div>
+        <button class="btn btn-primary" type="button" onclick="copyLink(this)">📋 复制</button>
+        <a class="btn btn-ghost" href="{{ result.short_url }}" target="_blank" rel="noopener">访问 ↗</a>
+      </div>
+      <div class="original-link">原始链接：{{ result.original_url }}</div>
+    </div>
+  {% endif %}
+</div>
+
+{% if recent %}
+<div class="card">
+  <div class="card-title">我最近创建的短链</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>短链接</th><th>原始链接</th><th>状态</th><th>创建时间</th><th></th></tr></thead>
+      <tbody>
+        {% for item in recent %}
+          <tr>
+            <td class="link-cell">{{ item.short_code }}</td>
+            <td><div class="url-cell">{{ item.original_url }}</div></td>
+            <td>
+              {% if not item.is_accessible %}
+                <span class="badge badge-expired">已过期/停用</span>
+              {% else %}
+                <span class="badge badge-on">生效中</span>
+              {% endif %}
+            </td>
+            <td class="muted">{{ item.created_at|date:"Y-m-d H:i" }}</td>
+            <td><a class="btn btn-ghost btn-sm" href="{% url 'link_detail' item.short_code %}">统计</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyLink(btn) {
+  const text = document.getElementById('shortLink').innerText.trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const old = btn.innerText;
+    btn.innerText = '✅ 已复制';
+    setTimeout(() => btn.innerText = old, 1600);
+  }).catch(() => {
+    // 兼容非安全上下文
+    const range = document.createRange();
+    range.selectNode(document.getElementById('shortLink'));
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand('copy');
+    btn.innerText = '✅ 已复制';
+    setTimeout(() => btn.innerText = '📋 复制', 1600);
+  });
+}
+</script>
+{% endblock %}

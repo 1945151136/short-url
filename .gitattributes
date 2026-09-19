@@ -1,0 +1,12 @@
+# 统一行尾：Shell 脚本在 Linux 容器内执行，必须使用 LF
+*.sh text eol=lf
+docker/entrypoint.sh text eol=lf
+
+# 文本文件默认跟随系统，二进制文件不转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary

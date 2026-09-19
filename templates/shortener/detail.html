@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}访问统计 · {{ obj.short_code }}{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-title">短链详情</div>
+  <div class="short-link-row">
+    <div class="short-link" id="sLink">{{ short_url }}</div>
+    <button class="btn btn-primary" onclick="copyText(document.getElementById('sLink').innerText, this)">📋 复制短链</button>
+    <a class="btn btn-ghost" href="{{ obj.original_url }}" target="_blank" rel="noopener">原始链接 ↗</a>
+  </div>
+  <div class="original-link">
+    原始链接：{{ obj.original_url }}<br>
+    创建时间：{{ obj.created_at|date:"Y-m-d H:i" }}
+    {% if obj.expires_at %}　过期时间：{{ obj.expires_at|date:"Y-m-d H:i" }}{% endif %}
+    {% if obj.remarks %}　备注：{{ obj.remarks }}{% endif %}
+  </div>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card"><div class="ico">👁️</div><div class="num">{{ pv }}</div><div class="label">访问量 PV</div></div>
+  <div class="stat-card"><div class="ico">👤</div><div class="num">{{ uv }}</div><div class="label">独立访客 UV</div></div>
+  <div class="stat-card"><div class="ico">🔗</div><div class="num">{% if obj.is_active %}<span class="badge badge-on">生效中</span>{% else %}<span class="badge badge-off">已停用</span>{% endif %}</div><div class="label">当前状态</div></div>
+</div>
+
+<div class="chart-grid">
+  <div class="card">
+    <div class="card-title">近 7 天访问趋势 (PV)</div>
+    <div class="chart-box"><canvas id="trendChart"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">设备类型分布</div>
+    <div class="chart-box small"><canvas id="deviceChart"></canvas></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">浏览器分布</div>
+  <div class="chart-box small" style="height:240px"><canvas id="browserChart"></canvas></div>
+</div>
+
+<p style="text-align:center"><a class="btn btn-ghost" href="{% url 'dashboard' %}">← 返回看板</a></p>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+const TREND = {{ trend_json|safe }};
+const DEVICE = {{ device_json|safe }};
+const BROWSER = {{ browser_json|safe }};
+const BLUE = ['#2e75b6', '#38b6a8', '#f59e0b', '#8b5cf6', '#ef6461', '#94a3b8'];
+
+function copyText(text, btn){ navigator.clipboard.writeText(text.trim()).then(()=>{ const o=btn.innerText; btn.innerText='已复制'; setTimeout(()=>btn.innerText=o,1400); }); }
+
+new Chart(document.getElementById('trendChart'), {
+  type: 'line',
+  data: {
+    labels: TREND.map(d => d.date),
+    datasets: [{
+      label: 'PV', data: TREND.map(d => d.pv),
+      borderColor: '#2e75b6', backgroundColor: 'rgba(46,117,182,.12)',
+      fill: true, tension: .35, pointRadius: 4, pointBackgroundColor: '#2e75b6',
+    }];
+  },
+  options: { responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+});
+
+function pie(id, obj, colors){
+  const labels = Object.keys(obj), data = Object.values(obj);
+  new Chart(document.getElementById(id), {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } } }
+  });
+}
+pie('deviceChart', DEVICE, BLUE);
+pie('browserChart', BROWSER, BLUE);
+</script>
+{% endblock %}

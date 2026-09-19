@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}登录 · 短链接服务平台{% endblock %}
+{% block content %}
+<div class="card center-card">
+  <div class="card-title">登录</div>
+  {% if form.errors %}
+    <div class="alert alert-error">用户名或密码不正确，请重试。</div>
+  {% endif %}
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label>用户名</label>
+      <input class="input" type="text" name="username" autofocus autocomplete="username" required>
+    </div>
+    <div class="form-group">
+      <label>密码</label>
+      <input class="input" type="password" name="password" autocomplete="current-password" required>
+    </div>
+    <input type="hidden" name="next" value="{{ next }}">
+    <button class="btn btn-primary btn-block" type="submit">登录</button>
+  </form>
+  <p class="helptext" style="text-align:center;margin-top:14px">
+    还没有账号？<a href="{% url 'register' %}">立即注册</a>
+  </p>
+</div>
+{% endblock %}

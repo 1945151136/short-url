@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}我的看板 · 短链接服务平台{% endblock %}
+
+{% block content %}
+<section class="hero" style="margin-bottom:24px">
+  <h1>我的<span class="grad">短链看板</span></h1>
+  <p>管理你的全部短链接，实时掌握访问数据</p>
+</section>
+
+<div class="stat-grid">
+  <div class="stat-card"><div class="ico">🔗</div><div class="num">{{ total_links }}</div><div class="label">短链接总数</div></div>
+  <div class="stat-card"><div class="ico">👁️</div><div class="num">{{ total_pv }}</div><div class="label">累计访问量 (PV)</div></div>
+  <div class="stat-card"><div class="ico">📈</div><div class="num">—</div><div class="label">设备 / 趋势分析见详情</div></div>
+</div>
+
+<div class="card">
+  <div class="card-title" style="justify-content:space-between">
+    <span style="display:flex;align-items:center;gap:8px">短链列表</span>
+    <a class="btn btn-primary btn-sm" href="{% url 'index' %}">＋ 新建短链</a>
+  </div>
+
+  {% if links %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>短码</th><th>原始链接</th><th>PV</th><th>UV</th><th>状态</th><th>创建时间</th><th>操作</th></tr>
+      </thead>
+      <tbody>
+        {% for item in links %}
+        <tr id="row-{{ item.obj.short_code }}">
+          <td class="link-cell">{{ item.obj.short_code }}</td>
+          <td><div class="url-cell" title="{{ item.obj.original_url }}">{{ item.obj.original_url }}</div></td>
+          <td>{{ item.pv }}</td>
+          <td>{{ item.uv }}</td>
+          <td>
+            {% if item.obj.is_expired %}
+              <span class="badge badge-expired">已过期</span>
+            {% elif item.obj.is_active %}
+              <span class="badge badge-on">生效中</span>
+            {% else %}
+              <span class="badge badge-off">已停用</span>
+            {% endif %}
+          </td>
+          <td class="muted">{{ item.obj.created_at|date:"Y-m-d H:i" }}</td>
+          <td style="white-space:nowrap">
+            <button class="btn btn-ghost btn-sm" onclick="copyText('{{ item.short_url }}', this)">复制</button>
+            <a class="btn btn-ghost btn-sm" href="{% url 'link_detail' item.obj.short_code %}">统计</a>
+            <button class="btn btn-ghost btn-sm" onclick="toggleActive('{{ item.obj.short_code }}', {{ item.obj.is_active|yesno:'true,false' }})">
+              {{ item.obj.is_active|yesno:'停用,启用' }}
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="removeLink('{{ item.obj.short_code }}')">删除</button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">
+    <div class="big">🔗</div>
+    <p>还没有短链接，去创建第一条吧～</p>
+    <p style="margin-top:14px"><a class="btn btn-primary" href="{% url 'index' %}">立即创建</a></p>
+  </div>
+  {% endif %}
+</div>
+
+<div class="card">
+  <div class="card-title">我的 API Key（用于开放接口鉴权）</div>
+  {% if user.api_key %}
+    <div class="short-link-row">
+      <div class="short-link" id="apiKey" style="font-size:14px">{{ user.api_key.key }}</div>
+      <button class="btn btn-ghost" type="button" onclick="copyText(document.getElementById('apiKey').innerText, this)">📋 复制</button>
+    </div>
+    <p class="helptext" style="margin-top:10px">
+      调用 POST /api/shorten 时在请求头携带 <code>X-API-Key: 你的Key</code> 即可。
+    </p>
+  {% else %}
+    <p class="muted">未生成 API Key，请联系管理员或在后台生成。</p>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text.trim()).then(() => {
+    const old = btn.innerText; btn.innerText = '已复制';
+    setTimeout(() => btn.innerText = old, 1400);
+  });
+}
+async function callApi(code, method, body) {
+  const opt = { method, headers: {'Content-Type': 'application/json'} };
+  if (body) opt.body = JSON.stringify(body);
+  const res = await fetch('/api/links/' + code, opt);
+  return res.json();
+}
+async function toggleActive(code, currentlyActive) {
+  await callApi(code, 'PATCH', { is_active: !currentlyActive });
+  location.reload();
+}
+async function removeLink(code) {
+  if (!confirm('确定删除短链「' + code + '」吗？相关访问统计将一并删除，且不可恢复。')) return;
+  await callApi(code, 'DELETE');
+  location.reload();
+}
+</script>
+{% endblock %}

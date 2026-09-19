@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}注册 · 短链接服务平台{% endblock %}
+{% block content %}
+<div class="card center-card">
+  <div class="card-title">创建账号</div>
+  <form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="form-group">
+        <label>{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<div class="helptext">{{ field.help_text|safe }}</div>{% endif %}
+        {% if field.errors %}<ul class="errorlist">{{ field.errors|unordered_list }}</ul>{% endif %}
+      </div>
+    {% endfor %}
+    <button class="btn btn-primary btn-block" type="submit">注册并登录</button>
+  </form>
+  <p class="helptext" style="text-align:center;margin-top:14px">
+    已有账号？<a href="{% url 'login' %}">直接登录</a>
+  </p>
+</div>
+{% endblock %}

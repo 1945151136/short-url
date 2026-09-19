@@ -1,0 +1,11 @@
+# ===== 短链接服务核心依赖（跨平台，Windows / Linux 均可安装）=====
+Django>=5.1,<6.0          # Web 框架
+redis>=5.0,<7.0           # Redis 客户端（缓存 / 限流 / HyperLogLog）
+django-redis>=5.4         # Django 的 Redis 缓存后端
+PyMySQL>=1.1              # 纯 Python 的 MySQL 驱动（免编译，作为 MySQLdb）
+python-dotenv>=1.0        # 读取 .env 环境变量
+user-agents>=2.2          # User-Agent 解析（设备 / 浏览器 / OS 统计）
+requests>=2.31            # 演示与测试脚本使用
+
+# 注：生产 WSGI 服务器 gunicorn 仅支持 Linux，已在 Dockerfile 中单独安装，
+# 不在此列出，避免 Windows 本地开发安装失败。

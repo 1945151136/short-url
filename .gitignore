@@ -1,0 +1,51 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# ===== 虚拟环境 =====
+.venv/
+venv/
+env/
+ENV/
+
+# ===== 环境变量（含密钥，禁止提交）=====
+.env
+.env.local
+.env.prod
+
+# ===== Django =====
+*.log
+*.sqlite3
+db.sqlite3
+db.sqlite3-journal
+/staticfiles/
+/media/
+local_settings.py
+
+# ===== IDE / 编辑器 =====
+.idea/
+.vscode/
+*.swp
+*.sublime-workspace
+*.sublime-project
+
+# ===== 操作系统 =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== Docker 数据卷 =====
+docker/data/
+mysql-data/
+redis-data/
+
+# ===== 临时 / 诊断文件 =====
+_*.txt
+scripts/_*.py

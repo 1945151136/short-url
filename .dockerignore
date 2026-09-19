@@ -1,0 +1,27 @@
+# 版本控制
+.git
+.gitignore
+.gitattributes
+
+# Python 虚拟环境与缓存
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# 本地数据库与运行产物
+db.sqlite3
+staticfiles/
+media/
+
+# 环境变量与 IDE
+.env
+.idea/
+.vscode/
+*.log
+
+# 文档与测试脚本（无需进入镜像）
+scripts/
+*.md
+!requirements.txt
