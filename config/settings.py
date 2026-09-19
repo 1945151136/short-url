@@ -46,6 +46,23 @@ SECRET_KEY = os.getenv(
 DEBUG = env_bool('DJANGO_DEBUG', True)
 ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', ['*'])
 
+# 反向代理（Nginx）场景：识别转发协议，便于未来启用 HTTPS 时正确判断安全请求
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# 允许发起 POST / 表单提交的可信来源（格式 scheme://host[:port]，逗号分隔）。
+# 经 Nginx 反代到非标准端口（如本机 8088）时，浏览器 Origin 带端口，必须显式信任，
+# 否则 Django 的 CSRF Origin 校验会返回 403。
+CSRF_TRUSTED_ORIGINS = env_list(
+    'CSRF_TRUSTED_ORIGINS',
+    [
+        'http://localhost:8000',
+        'http://127.0.0.1:8000',
+        'http://localhost:8088',
+        'http://127.0.0.1:8088',
+        'http://localhost:8090',
+        'http://127.0.0.1:8090',
+    ],
+)
+
 # ============================ 应用注册 ============================
 INSTALLED_APPS = [
     'django.contrib.admin',
