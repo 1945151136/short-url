@@ -10,6 +10,14 @@
 ![Docker](https://img.shields.io/badge/Docker--Compose-ready-2496ED)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
+### 🔗 在线体验（Live Demo）
+
+[![Live Demo](https://img.shields.io/badge/Live_Demo-short--url--gt4s.onrender.com-46e3b3?style=for-the-badge&logo=render&logoColor=white)](https://short-url-gt4s.onrender.com)
+
+部署于 Render 免费实例，**免登录即可创建短链并体验 HTTP 302 跳转与数据看板**。
+
+> ⏳ 免费实例闲置约 15 分钟会休眠，首次打开需冷启动 **30–60 秒**；演示环境使用容器内 SQLite，**重新部署 / 重启后数据会清空**，仅用于功能体验。完整 MySQL + Redis + Nginx 链路请使用下方 Docker Compose 在本地启动。
+
 ---
 
 ## 📑 目录
@@ -22,6 +30,7 @@
 - [📁 项目结构](#项目结构)
 - [🗄 数据库设计](#数据库设计)
 - [🚀 快速开始](#快速开始)
+- [☁️ Render 免费部署](#-render-免费部署)
 - [📖 API 文档](#api-文档)
 - [🧪 测试](#测试)
 - [🔧 配置项](#配置项)
@@ -261,6 +270,30 @@ python manage.py runserver        # http://127.0.0.1:8000
 ```
 
 若本机已有 MySQL / Redis，复制 `.env.example` 为 `.env`，设置 `DB_ENGINE=mysql` 与 `REDIS_URL=redis://127.0.0.1:6379/0` 即可切换到完整链路。
+
+---
+
+## ☁️ Render 免费部署
+
+仓库已适配 Render 等免 Nginx 的 PaaS：容器启动时自动执行 `migrate`、用 **WhiteNoise** 托管静态文件、gunicorn 绑定 Render 注入的 `$PORT`；不配置 MySQL / Redis 时自动回退 **SQLite + 进程内缓存**，零外部依赖即可上线。
+
+1. 将本仓库推送到你的 GitHub（公有仓库可直接用 Render 的 **Public Git Repository** 连接，无需安装 Render GitHub App）。
+2. Render 控制台 **New → Web Service**，Runtime 保持自动检测到的 **Docker**（根目录自带 `Dockerfile`），分支选 `main`，实例类型选 **Free**。
+3. 添加以下环境变量（最小集合）：
+
+| 变量 | 值 |
+| --- | --- |
+| `DB_ENGINE` | `sqlite`（使用容器内 SQLite，不连 MySQL） |
+| `DJANGO_SECRET_KEY` | 随机长字符串 |
+| `DJANGO_DEBUG` | `False` |
+| `DJANGO_ALLOWED_HOSTS` | `*` |
+| `ALLOW_ANONYMOUS_CREATE` | `True`（开启免登录演示） |
+| `CSRF_TRUSTED_ORIGINS` | `https://<服务名>.onrender.com` |
+| `SITE_BASE_URL` | `https://<服务名>.onrender.com` |
+
+4. 部署完成后访问 Render 分配的域名即可。**注意**：Render 会在服务名后追加随机后缀（如 `short-url-ab12`），务必把 `CSRF_TRUSTED_ORIGINS` 与 `SITE_BASE_URL` 改成浏览器地址栏里的**完整实际域名**后再次保存触发部署，否则网页表单 POST 会报 CSRF 403、生成的短链域名也会不正确。
+
+> 📌 **免费实例限制（务必知悉）**：约 15 分钟无访问自动休眠，冷启动需 **30–60 秒**；SQLite 位于临时磁盘，**重新部署 / 重启后数据清空**，仅适合功能演示。需要持久化可挂载 Render Disk（并让 SQLite 指向挂载目录），或改用 Render 免费 PostgreSQL + Upstash Redis（在 `config/settings.py` 中补充对应后端即可）。
 
 ---
 
